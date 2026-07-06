@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ESP32 Wiring Guide — Predictive Maintenance System</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f8f9fa; color: #1a1a1a; padding: 2rem; }
+  h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .subtitle { font-size: 0.9rem; color: #666; margin-bottom: 2rem; }
+  .section { margin-bottom: 2rem; }
+  .section-title {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: #888; margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem; border-bottom: 1px solid #e0e0e0;
+  }
+  table { width: 100%; border-collapse: collapse; background: #fff;
+    border-radius: 10px; overflow: hidden; border: 1px solid #e8e8e8; font-size: 0.875rem; }
+  th { background: #f2f4f6; padding: 10px 14px; text-align: left;
+    font-weight: 600; color: #555; font-size: 0.78rem; letter-spacing: 0.03em; }
+  td { padding: 9px 14px; border-top: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .pin { font-family: monospace; font-size: 0.82rem; background: #f0f0f0;
+    padding: 2px 7px; border-radius: 4px; color: #333; }
+  .wire {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  }
+  .red    { background: #fde8e8; color: #b91c1c; }
+  .black  { background: #e8e8e8; color: #222; }
+  .blue   { background: #dbeafe; color: #1d4ed8; }
+  .yellow { background: #fef9c3; color: #854d0e; }
+  .green  { background: #dcfce7; color: #15803d; }
+  .orange { background: #ffedd5; color: #c2410c; }
+  .purple { background: #ede9fe; color: #6d28d9; }
+  .note { font-size: 0.8rem; color: #888; }
+  .alert-box {
+    background: #fffbeb; border: 1px solid #fcd34d;
+    border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem;
+    font-size: 0.875rem; color: #78350f;
+  }
+  .alert-box strong { display: block; margin-bottom: 0.3rem; font-size: 0.9rem; }
+  .checklist { list-style: none; margin-top: 0.5rem; }
+  .checklist li { padding: 3px 0; }
+  .checklist li::before { content: "□ "; font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>ESP32 Wiring Guide</h1>
+<p class="subtitle">Predictive Maintenance System — Real Hardware</p>
+
+<div class="alert-box">
+  <strong>Before you wire anything:</strong>
+  <ul class="checklist">
+    <li>Power OFF / unplug ESP32 while wiring</li>
+    <li>Double-check every GND connection — floating ground = garbage readings</li>
+    <li>DS18B20 REQUIRES the 4.7kΩ pull-up resistor — it will not work without it</li>
+    <li>Use GPIO34 for ACS712 — it is ADC1 and input-only (safe for analog)</li>
+    <li>Never connect 5V to ESP32 GPIO pins — it runs on 3.3V logic</li>
+  </ul>
+</div>
+
+<!-- MPU6050 -->
+<div class="section">
+  <div class="section-title">MPU6050 — Vibration Sensor (I2C)</div>
+  <table>
+    <thead><tr><th>MPU6050 Pin</th><th>ESP32 Pin</th><th>Wire Color</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pin">VCC</span></td><td><span class="pin">3.3V</span></td><td><span class="wire red">Red</span></td><td class="note">3.3V only — do NOT use 5V</td></tr>
+      <tr><td><span class="pin">GND</span></td><td><span class="pin">GND</span></td><td><span class="wire black">Black</span></td><td class="note">Common ground</td></tr>
+      <tr><td><span class="pin">SDA</span></td><td><span class="pin">GPIO21</span></td><td><span class="wire blue">Blue</span></td><td class="note">ESP32 default I2C SDA</td></tr>
+      <tr><td><span class="pin">SCL</span></td><td><span class="pin">GPIO22</span></td><td><span class="wire yellow">Yellow</span></td><td class="note">ESP32 default I2C SCL</td></tr>
+      <tr><td><span class="pin">AD0</span></td><td><span class="pin">GND</span></td><td><span class="wire black">Black</span></td><td class="note">Sets I2C address to 0x68</td></tr>
+      <tr><td><span class="pin">INT</span></td><td>— (unused)</td><td>—</td><td class="note">Not needed for polling mode</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- DS18B20 -->
+<div class="section">
+  <div class="section-title">DS18B20 — Temperature Sensor (OneWire)</div>
+  <table>
+    <thead><tr><th>DS18B20 Pin</th><th>ESP32 Pin</th><th>Wire Color</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pin">VCC (Red)</span></td><td><span class="pin">3.3V</span></td><td><span class="wire red">Red</span></td><td class="note">Parasite mode NOT used</td></tr>
+      <tr><td><span class="pin">GND (Black)</span></td><td><span class="pin">GND</span></td><td><span class="wire black">Black</span></td><td class="note">Common ground</td></tr>
+      <tr><td><span class="pin">DATA (Yellow)</span></td><td><span class="pin">GPIO4</span></td><td><span class="wire green">Green</span></td><td class="note">OneWire data line</td></tr>
+      <tr><td colspan="4" style="padding:10px 14px; background:#f9f9f9; font-size:0.82rem; color:#555;">
+        <strong>Pull-up resistor (required):</strong> Connect a <strong>4.7kΩ resistor</strong>
+        between DS18B20 DATA pin and 3.3V. Without this, the sensor will not respond.
+      </td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ACS712 -->
+<div class="section">
+  <div class="section-title">ACS712 — Current Sensor (Analog)</div>
+  <table>
+    <thead><tr><th>ACS712 Pin</th><th>ESP32 Pin</th><th>Wire Color</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pin">VCC</span></td><td><span class="pin">3.3V</span></td><td><span class="wire red">Red</span></td><td class="note">Module runs on 3.3V with ESP32</td></tr>
+      <tr><td><span class="pin">GND</span></td><td><span class="pin">GND</span></td><td><span class="wire black">Black</span></td><td class="note">Common ground</td></tr>
+      <tr><td><span class="pin">OUT</span></td><td><span class="pin">GPIO34</span></td><td><span class="wire purple">Purple</span></td><td class="note">Analog output → ADC1 only</td></tr>
+      <tr><td><span class="pin">IP+ / IP-</span></td><td>Motor wire (series)</td><td><span class="wire orange">Orange</span></td><td class="note">Motor current flows through these</td></tr>
+      <tr><td colspan="4" style="padding:10px 14px; background:#f9f9f9; font-size:0.82rem; color:#555;">
+        <strong>Important:</strong> The motor's power wire must pass <em>through</em> the ACS712 (IP+ → IP−).
+        Do NOT use ADC2 pins (GPIO0, 2, 4, 12–15, 25–27) — they conflict with WiFi.
+      </td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- LEDs -->
+<div class="section">
+  <div class="section-title">Status LEDs (with 220Ω resistors)</div>
+  <table>
+    <thead><tr><th>LED</th><th>LED Anode (+)</th><th>Resistor → ESP32</th><th>LED Cathode (−)</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="wire green">Green LED</span></td>
+        <td><span class="pin">GPIO2</span></td>
+        <td>220Ω → GPIO2</td>
+        <td><span class="pin">GND</span></td>
+        <td class="note">Normal operation</td>
+      </tr>
+      <tr>
+        <td><span class="wire yellow">Yellow LED</span></td>
+        <td><span class="pin">GPIO5</span></td>
+        <td>220Ω → GPIO5</td>
+        <td><span class="pin">GND</span></td>
+        <td class="note">Warning threshold crossed</td>
+      </tr>
+      <tr>
+        <td style="color:#b91c1c; font-weight:600;">Red LED</td>
+        <td><span class="pin">GPIO18</span></td>
+        <td>220Ω → GPIO18</td>
+        <td><span class="pin">GND</span></td>
+        <td class="note">Critical — take action!</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Power -->
+<div class="section">
+  <div class="section-title">Power Summary</div>
+  <table>
+    <thead><tr><th>Component</th><th>Powered From</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>ESP32</td><td>USB (5V) or Vin</td><td class="note">Use USB cable from PC for programming + power</td></tr>
+      <tr><td>MPU6050</td><td>ESP32 3.3V pin</td><td class="note">Do not use 5V — will damage chip</td></tr>
+      <tr><td>DS18B20</td><td>ESP32 3.3V pin</td><td class="note">Works at 3.3V in normal (non-parasite) mode</td></tr>
+      <tr><td>ACS712</td><td>ESP32 3.3V pin</td><td class="note">Module accepts 3.3–5V</td></tr>
+      <tr><td>DC Motor</td><td>External 9–12V supply</td><td class="note">Never power motor from ESP32 — use L298N driver</td></tr>
+      <tr><td>LEDs</td><td>ESP32 GPIO (3.3V)</td><td class="note">220Ω resistor required on each</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Quick check -->
+<div class="section">
+  <div class="section-title">Pre-power checklist</div>
+  <div style="background:#fff; border:1px solid #e8e8e8; border-radius:10px; padding:1rem 1.25rem;">
+    <ul class="checklist" style="font-size:0.875rem; line-height:2;">
+      <li>MPU6050 VCC → 3.3V (not 5V)</li>
+      <li>MPU6050 SDA → GPIO21, SCL → GPIO22</li>
+      <li>MPU6050 AD0 → GND</li>
+      <li>DS18B20 DATA → GPIO4 with 4.7kΩ pull-up to 3.3V</li>
+      <li>ACS712 OUT → GPIO34 (ADC1 only)</li>
+      <li>ACS712 IP+ and IP− in series with motor wire</li>
+      <li>All GNDs connected to ESP32 GND (common ground)</li>
+      <li>220Ω resistor on each LED before GPIO pin</li>
+      <li>Motor powered from external supply via L298N</li>
+      <li>WiFi SSID and password updated in main.ino</li>
+      <li>SERVER_URL in main.ino updated with your PC's local IP</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>
