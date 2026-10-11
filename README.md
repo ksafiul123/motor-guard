@@ -1,5 +1,5 @@
 # MotorGuard ⚙️
-> Real-time IoT-based Predictive Maintenance System for Industrial Motors
+> Real-time IoT-based Predictive Maintenance System for Industrial Motorss
 
 [![ESP32](https://img.shields.io/badge/ESP32-Firmware-blue?logo=espressif)](https://www.espressif.com/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
